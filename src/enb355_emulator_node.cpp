@@ -5,7 +5,7 @@
 
 #include <string.h>
 #include <math.h>
-#include <rand.h>
+#include <cstdlib>
 
 int main( int argc, char **argv ) {
 	//==== Initialize node ====//
@@ -54,7 +54,7 @@ int main( int argc, char **argv ) {
 	ros::Publisher trans_pub = nh.advertise<geometry_msgs::TransformStamped>(transform_topic, 100);
 	ros::Publisher gas_a_pub = nh.advertise<std_msgs::Int32>(gas_a_topic, 10);
 	ros::Publisher gas_b_pub = nh.advertise<std_msgs::Int32>(gas_b_topic, 10);
-	ros::Publisher gas_c_pub = nh.advertise<std_msgs::Int32>(gas_b_topic, 10);
+	ros::Publisher gas_c_pub = nh.advertise<std_msgs::Int32>(gas_c_topic, 10);
 
 	image_transport::ImageTransport it(nh);
 	image_transport::Publisher img_pub = it.advertise(image_topic, 1);
@@ -66,8 +66,8 @@ int main( int argc, char **argv ) {
 	//Gas
 	int gas_rate_counter = 0;
 	std_msgs::Int32 gas_a_out;
-	std_msgs::Int32 gas_a_out;
-	std_msgs::Int32 gas_a_out;
+	std_msgs::Int32 gas_b_out;
+	std_msgs::Int32 gas_c_out;
 	//Image
 	int img_seq = 0;
 	int img_rate_counter = 0;
@@ -79,14 +79,14 @@ int main( int argc, char **argv ) {
 	img_out.width = 640;
 	img_out.encoding = "rgb8";
 	img_out.is_bigendian = 0x00;
-	img_out.step = 3*msg.width;
+	img_out.step = 3*img_out.width;
 
 	uint16_t c = 0xFF;
-	bool flip = False;
+	bool flip = false;
 	int ucount = 1;
 	int vcount = 1;
 
-    size_t st0 = (step_arg * rows_arg);
+	size_t st0 = (img_out.step * img_out.height);
 	img_out.data.resize(st0);
 
 	for(int v = 0; v < img_out.height; v++) {
@@ -120,7 +120,7 @@ int main( int argc, char **argv ) {
 			vcount = 2*vcount;
 
 			if( flip ) {
-				flip = false
+				flip = false;
 			} else {
 				flip = true;
 			}
@@ -132,9 +132,10 @@ int main( int argc, char **argv ) {
 	int trans_seq = 0;
 	double movementStep = 2*M_PI/numStep;
 	int currentStep = 0;
-	geometry_msgs::TransformStamped trans_out
+	geometry_msgs::TransformStamped trans_out;
 	trans_out.header.frame_id = "world";
-	trans_out.transform.translation.z = 0;
+	trans_out.child_frame_id = "uav";
+	trans_out.transform.translation.z = 2;
 	trans_out.transform.rotation.w = 0;
 	trans_out.transform.rotation.x = 1;
 	trans_out.transform.rotation.y = 0;
@@ -149,6 +150,10 @@ int main( int argc, char **argv ) {
 			gas_b_out.data = std::rand() % 200 + 200;
 			gas_c_out.data = std::rand() % 50 + 400;
 
+			gas_a_pub.publish(gas_a_out);
+			gas_b_pub.publish(gas_b_out);
+			gas_c_pub.publish(gas_c_out);
+
 			gas_rate_counter = 0;
 		}
 
@@ -159,6 +164,8 @@ int main( int argc, char **argv ) {
 			img_seq++;
 			img_out.header.stamp = ros::Time::now();
 			img_out.header.seq = img_seq;
+
+			img_pub.publish(img_out);
 
 			img_rate_counter = 0;
 		}
@@ -177,14 +184,9 @@ int main( int argc, char **argv ) {
 		trans_out.header.seq = trans_seq;
 
 		trans_out.transform.translation.x = 2*std::cos(currentStep*movementStep);
-		trans_out.transform.translation.x = 4*std::sin(currentStep*movementStep);
+		trans_out.transform.translation.y = 4*std::sin(currentStep*movementStep);
 
-		//Publishers
 		trans_pub.publish(trans_out);
-		gas_a_pub.publish(gas_a_out);
-		gas_b_pub.publish(gas_b_out);
-		gas_c_pub.publish(gas_c_out);
-		img_pub.publish(img_out);
 
 		//Sleep
 		loop_rate.sleep();

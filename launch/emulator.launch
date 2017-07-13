@@ -1,9 +1,9 @@
 <launch>
-	<node pkg="enb355_emulator" type="enb355_emulator_node" name="emulator" clear_params="true" output="screen">
+	<node pkg="uavtaq_emulator" type="uavtaq_emulator_node" name="emulator" clear_params="true" output="screen">
 		<!-- Connection Parameters -->
 		<param name="image_topic" value="/camera/image_raw" type="str"/>
 		
-		<param name="transform_topic" value="/vicon/cicada/cicada" type="str"/>
+		<param name="transform_topic" value="/uav_position" type="str"/>
 		
 		<param name="gas_a_topic" value="/sensors/gas/a" type="str"/>
 		<param name="gas_b_topic" value="/sensors/gas/b" type="str"/>

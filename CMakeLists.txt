@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(enb355_emulator)
+project(uavtaq_emulator)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -119,24 +119,24 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(enb355_emulator
-#   src/${PROJECT_NAME}/enb355_emulator.cpp
+# add_library(uavtaq_emulator
+#   src/${PROJECT_NAME}/uavtaq_emulator.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(enb355_emulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(uavtaq_emulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(enb355_emulator_node src/enb355_emulator_node.cpp)
+add_executable(uavtaq_emulator_node src/uavtaq_emulator_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(enb355_emulator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(uavtaq_emulator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(enb355_emulator_node
+target_link_libraries(uavtaq_emulator_node
   ${catkin_LIBRARIES}
 )
 

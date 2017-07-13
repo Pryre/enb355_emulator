@@ -9,7 +9,7 @@
 
 int main( int argc, char **argv ) {
 	//==== Initialize node ====//
-	ros::init( argc, argv, "enb355_emulator" );
+	ros::init( argc, argv, "uavtaq_emulator" );
 	ros::NodeHandle nh( ros::this_node::getName() );
 
 	//==== Set up variables ====//

@@ -7,4 +7,4 @@ This node will publish the following types:
   - 3x std_msgs/Int32
 
 To run:
-roslaunch enb355_emulator emulator.launch
+roslaunch uavtaq_emulator emulator.launch

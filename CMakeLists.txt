@@ -5,10 +5,11 @@ project(uavtaq_emulator)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  nav_msgs
   geometry_msgs
   image_transport
-  roscpp
   std_msgs
+  roscpp
 )
 
 ## System dependencies are found with CMake's conventions

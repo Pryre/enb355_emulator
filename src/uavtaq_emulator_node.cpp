@@ -24,13 +24,13 @@ int main( int argc, char **argv ) {
 	std::string gas_c_topic = "gas/c";
 
 	//==== Get parameters if set ====//
-	nh_.param( "topic_image", image_topic, image_topic );
-	nh_.param( "topic_transform", image_topic, image_topic );
-	nh_.param( "topic_pose", pose_topic, pose_topic );
-	nh_.param( "topic_occupancy_grid", grid_topic, grid_topic );
-	nh_.param( "topic_gas_a", gas_a_topic, gas_a_topic);
-	nh_.param( "topic_gas_b", gas_b_topic, gas_b_topic);
-	nh_.param( "topic_gas_c", gas_c_topic, gas_c_topic);
+	nh.param( "topic_image", image_topic, image_topic );
+	nh.param( "topic_transform", transform_topic, transform_topic );
+	nh.param( "topic_pose", pose_topic, pose_topic );
+	nh.param( "topic_occupancy_grid", grid_topic, grid_topic );
+	nh.param( "topic_gas_a", gas_a_topic, gas_a_topic);
+	nh.param( "topic_gas_b", gas_b_topic, gas_b_topic);
+	nh.param( "topic_gas_c", gas_c_topic, gas_c_topic);
 
 	//==== Begin publisher & subscriber ====//
 	ros::Publisher trans_pub = nh.advertise<geometry_msgs::TransformStamped>(transform_topic, 100);
@@ -122,12 +122,12 @@ int main( int argc, char **argv ) {
 	trans_out.child_frame_id = "uav";
 	trans_out.transform.translation.z = 2;
 	trans_out.transform.rotation.w = 0;
-	trans_out.transform.rotation.x = 1;
+	trans_out.transform.rotation.x = 0;
 	trans_out.transform.rotation.y = 0;
-	trans_out.transform.rotation.z = 0;
+	trans_out.transform.rotation.z = 1;
 
 	//Pose
-	geometry_msgs::TransformStamped pose_out;
+	geometry_msgs::PoseStamped pose_out;
 	pose_out.header.frame_id = trans_out.header.frame_id;
 	pose_out.pose.position.z = trans_out.transform.translation.z;
 	pose_out.pose.orientation.w = trans_out.transform.rotation.w;
@@ -136,6 +136,7 @@ int main( int argc, char **argv ) {
 	pose_out.pose.orientation.z = trans_out.transform.rotation.z;
 
 	//Occupancy Grid
+	std::srand( std::time(0) );
 	ros::Time grid_stamp = ros::Time::now();
 	nav_msgs::OccupancyGrid grid_out;
 	grid_out.header.frame_id = "world";
@@ -149,10 +150,10 @@ int main( int argc, char **argv ) {
 	grid_out.info.origin.orientation.w = 1.0;
 
 	for(int gv = 0; gv < ( grid_out.info.width * grid_out.info.height ); gv++) {
-		int8_t val = -1;
+		int8_t val = 100;
 
-		if(std::rand() > 0.5) {
-			val = 100;
+		if( std::rand() % 8 ) {
+			val = 0;
 		}
 
 		grid_out.data.push_back(val);

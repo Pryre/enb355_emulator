@@ -9,6 +9,61 @@
 #include <math.h>
 #include <cstdlib>
 
+void generateImageData(&sensor_msgs::Image img, int w, int h, int r, int g, int b) {
+img_out_w.header.frame_id = "camera";
+	img.height = h;
+	img.width = w;
+	img.encoding = "bgr8";
+	img.is_bigendian = 0x00;
+	img.step = 3 * img_out_w.width;
+
+	uint16_t c = 0xFF;
+	bool flip = false;
+	int ucount = 1;
+	int vcount = 1;
+
+	size_t st0 = (img.step * img.height);
+	img.data.resize(st0);
+
+	for(int v = 0; v < img.height; v++) {
+		for(int u = 0; u < img.width; u++) {
+			if( ucount < u ) {
+				ucount = 2*ucount;
+
+				if( flip ) {
+					flip = false;
+				} else {
+					flip = true;
+				}
+			}
+
+			if( flip ) {
+				img.data[img_data_counter] = b;
+				img.data[img_data_counter + 1] = g;
+				img.data[img_data_counter + 2] = r;
+			} else {
+				img.data[img_data_counter] = 0x00;
+				img.data[img_data_counter + 1] = 0x00;
+				img.data[img_data_counter + 2] = 0x00;
+			}
+
+			img_data_counter += 3;
+		}
+
+		ucount = 1;
+
+		if( vcount < v ) {
+			vcount = 2*vcount;
+
+			if( flip ) {
+				flip = false;
+			} else {
+				flip = true;
+			}
+		}
+	}
+}
+
 int main( int argc, char **argv ) {
 	//==== Initialize node ====//
 	ros::init( argc, argv, "uavtaq_emulator" );
@@ -57,60 +112,15 @@ int main( int argc, char **argv ) {
 	int img_seq = 0;
 	int img_rate_counter = 0;
 	int img_data_counter = 0;
-	sensor_msgs::Image img_out;
+	sensor_msgs::Image img_out_w;
+	sensor_msgs::Image img_out_r;
+	sensor_msgs::Image img_out_g;
+	sensor_msgs::Image img_out_b;
 
-	img_out.header.frame_id = "camera";
-	img_out.height = 480;
-	img_out.width = 640;
-	img_out.encoding = "rgb8";
-	img_out.is_bigendian = 0x00;
-	img_out.step = 3*img_out.width;
-
-	uint16_t c = 0xFF;
-	bool flip = false;
-	int ucount = 1;
-	int vcount = 1;
-
-	size_t st0 = (img_out.step * img_out.height);
-	img_out.data.resize(st0);
-
-	for(int v = 0; v < img_out.height; v++) {
-		for(int u = 0; u < img_out.width; u++) {
-			if( ucount < u ) {
-				ucount = 2*ucount;
-
-				if( flip ) {
-					flip = false;
-				} else {
-					flip = true;
-				}
-			}
-			if( flip ) {
-				c = 0xFF;
-			} else {
-				c = 0x00;
-			}
-
-			img_out.data[img_data_counter] = c;
-			img_data_counter++;
-			img_out.data[img_data_counter] = c;
-			img_data_counter++;
-			img_out.data[img_data_counter] = c;
-			img_data_counter++;
-		}
-
-		ucount = 1;
-
-		if( vcount < v ) {
-			vcount = 2*vcount;
-
-			if( flip ) {
-				flip = false;
-			} else {
-				flip = true;
-			}
-		}
-	}
+	generateImageData(img_out_w, 640, 480, 0xFF, 0xFF, 0xFF);
+	generateImageData(img_out_r, 640, 480, 0xFF, 0x00, 0x00);
+	generateImageData(img_out_g, 640, 480, 0x00, 0xFF, 0x00);
+	generateImageData(img_out_b, 640, 480, 0x00, 0x00, 0xFF);
 
 	//Transform
 	int numStep = 1000;
@@ -180,10 +190,39 @@ int main( int argc, char **argv ) {
 
 		//Image
 		if( img_rate_counter >= 25 ) {
-			img_out.header.stamp = ros::Time::now();
-			img_out.header.seq = img_seq;
+			switch(img_seq) {
+				case 0: {
+					img_out_w.header.stamp = ros::Time::now();
+					img_pub.publish(img_out_w);
 
-			img_pub.publish(img_out);
+					img_seq = 1;
+					break;
+				}
+				case 1: {
+					img_out_r.header.stamp = ros::Time::now();
+					img_pub.publish(img_out_r);
+
+					img_seq = 2;
+					break;
+				}
+				case 2: {
+					img_out_g.header.stamp = ros::Time::now();
+					img_pub.publish(img_out_g);
+
+					img_seq = 3;
+					break;
+				}
+				case 3: {
+					img_out_b.header.stamp = ros::Time::now();
+					img_pub.publish(img_out_b);
+
+					img_seq = 0;
+					break;
+				}
+				default: {
+					img_seq = 0;
+				}
+			}
 
 			img_rate_counter = 0;
 		}

@@ -9,19 +9,20 @@
 #include <math.h>
 #include <cstdlib>
 
-void generateImageData(&sensor_msgs::Image img, int w, int h, int r, int g, int b) {
-img_out_w.header.frame_id = "camera";
+void generateImageData(sensor_msgs::Image &img, int w, int h, int r, int g, int b) {
+	img.header.frame_id = "camera";
 	img.height = h;
 	img.width = w;
 	img.encoding = "bgr8";
 	img.is_bigendian = 0x00;
-	img.step = 3 * img_out_w.width;
+	img.step = 3 * img.width;
 
 	uint16_t c = 0xFF;
 	bool flip = false;
 	int ucount = 1;
 	int vcount = 1;
-
+	int img_data_counter = 0;
+	
 	size_t st0 = (img.step * img.height);
 	img.data.resize(st0);
 
@@ -111,7 +112,6 @@ int main( int argc, char **argv ) {
 	//Image
 	int img_seq = 0;
 	int img_rate_counter = 0;
-	int img_data_counter = 0;
 	sensor_msgs::Image img_out_w;
 	sensor_msgs::Image img_out_r;
 	sensor_msgs::Image img_out_g;

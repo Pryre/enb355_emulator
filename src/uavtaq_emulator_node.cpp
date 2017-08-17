@@ -22,7 +22,7 @@ void generateImageData(sensor_msgs::Image &img, int w, int h, int r, int g, int 
 	int ucount = 1;
 	int vcount = 1;
 	int img_data_counter = 0;
-	
+
 	size_t st0 = (img.step * img.height);
 	img.data.resize(st0);
 
@@ -74,7 +74,8 @@ int main( int argc, char **argv ) {
 	std::string image_topic = "image_raw";
 	std::string transform_topic = "transform";
 	std::string pose_topic = "transform";
-	std::string grid_topic = "grid_map";
+	std::string grid_test_topic = "rand_grid_map";
+	std::string grid_rand_topic = "test_grid_map";
 	std::string gas_a_topic = "gas/a";
 	std::string gas_b_topic = "gas/b";
 	std::string gas_c_topic = "gas/c";
@@ -83,7 +84,8 @@ int main( int argc, char **argv ) {
 	nh.param( "topic_image", image_topic, image_topic );
 	nh.param( "topic_transform", transform_topic, transform_topic );
 	nh.param( "topic_pose", pose_topic, pose_topic );
-	nh.param( "topic_occupancy_grid", grid_topic, grid_topic );
+	nh.param( "topic_rand_occupancy_grid", grid_rand_topic, grid_rand_topic );
+	nh.param( "topic_test_occupancy_grid", grid_test_topic, grid_test_topic );
 	nh.param( "topic_gas_a", gas_a_topic, gas_a_topic);
 	nh.param( "topic_gas_b", gas_b_topic, gas_b_topic);
 	nh.param( "topic_gas_c", gas_c_topic, gas_c_topic);
@@ -95,7 +97,8 @@ int main( int argc, char **argv ) {
 	ros::Publisher gas_b_pub = nh.advertise<std_msgs::Int32>(gas_b_topic, 10);
 	ros::Publisher gas_c_pub = nh.advertise<std_msgs::Int32>(gas_c_topic, 10);
 
-	ros::Publisher grid_pub = nh.advertise<nav_msgs::OccupancyGrid>(grid_topic, 1, true);
+	ros::Publisher grid_rand_pub = nh.advertise<nav_msgs::OccupancyGrid>(grid_rand_topic, 1, true);
+	ros::Publisher grid_test_pub = nh.advertise<nav_msgs::OccupancyGrid>(grid_test_topic, 1, true);
 
 	image_transport::ImageTransport it(nh);
 	image_transport::Publisher img_pub = it.advertise(image_topic, 1);
@@ -148,28 +151,57 @@ int main( int argc, char **argv ) {
 	//Occupancy Grid
 	std::srand( std::time(0) );
 	ros::Time grid_stamp = ros::Time::now();
-	nav_msgs::OccupancyGrid grid_out;
-	grid_out.header.frame_id = "world";
-	grid_out.header.stamp = grid_stamp;
-	grid_out.info.map_load_time = grid_stamp;
-	grid_out.info.resolution = 0.1;
-	grid_out.info.width = 50;
-	grid_out.info.height = 50;
-	grid_out.info.origin.position.x = -2.5;
-	grid_out.info.origin.position.y = -2.5;
-	grid_out.info.origin.orientation.w = 1.0;
+	nav_msgs::OccupancyGrid grid_test_out;
+	nav_msgs::OccupancyGrid grid_rand_out;
+	grid_test_out.header.frame_id = "world";
+	grid_test_out.header.stamp = grid_stamp;
+	grid_test_out.info.map_load_time = grid_stamp;
+	grid_test_out.info.resolution = 0.1;
+	grid_test_out.info.width = 50;
+	grid_test_out.info.height = 50;
+	grid_test_out.info.origin.position.x = -2.5;
+	grid_test_out.info.origin.position.y = -2.5;
+	grid_test_out.info.origin.orientation.w = 1.0;
+	grid_rand_out = grid_test_out;
 
-	for(int gv = 0; gv < ( grid_out.info.width * grid_out.info.height ); gv++) {
-		int8_t val = 100;
+	int g_obs_x = 20;
+	int g_obs_y = 30;
+	int g_obs_s = 5;
 
-		if( std::rand() % 8 ) {
-			val = 0;
+	for(int gv_x = 0; gv_x < grid_test_out.info.width; gv_x++) {
+		for(int gv_y = 0; gv_y < grid_test_out.info.height; gv_y++) {
+			//Generate boundary and obstacle
+			int8_t g_val = 0;
+
+			if( (gv_x == 0) ||
+				(gv_y == 0) ||
+				(gv_x == grid_test_out.info.width - 1) ||
+				(gv_y == grid_test_out.info.height - 1) ) {
+				g_val = 100;
+			}
+
+			if( ( ( gv_x >= g_obs_x - g_obs_s) &&
+				  ( gv_x <= g_obs_x + g_obs_s) ) &&
+				( ( gv_y >= g_obs_y - g_obs_s) &&
+				  ( gv_y <= g_obs_y + g_obs_s) ) ) {
+				g_val = 100;
+			}
+
+			grid_test_out.data.push_back(g_val);
+
+			//Generate random data for the random map
+			int8_t rand_val = 100;
+
+			if( std::rand() % 8 ) {
+				rand_val = 0;
+			}
+
+			grid_rand_out.data.push_back(rand_val);
 		}
-
-		grid_out.data.push_back(val);
 	}
 
-	grid_pub.publish(grid_out);
+	grid_rand_pub.publish(grid_rand_out);
+	grid_test_pub.publish(grid_test_out);
 
 	//==== Begin publishing topics ====//
 	while ( ros::ok() ) {

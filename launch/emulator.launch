@@ -6,7 +6,8 @@
 		<param name="topic_transform" value="transform" type="str"/>
 		<param name="topic_pose" value="pose" type="str"/>
 
-		<param name="topic_occupancy_grid" value="grid" type="str"/>
+		<param name="topic_rand_occupancy_grid" value="grid_rand" type="str"/>
+		<param name="topic_test_occupancy_grid" value="grid_test" type="str"/>
 
 		<param name="topic_gas_a" value="sensors/gas/a" type="str"/>
 		<param name="topic_gas_b" value="sensors/gas/b" type="str"/>
